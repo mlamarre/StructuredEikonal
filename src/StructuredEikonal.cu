@@ -1,6 +1,6 @@
 #include "StructuredEikonal.h"
 
-StructuredEikonal::StructuredEikonal(bool verbose) 
+StructuredEikonal::StructuredEikonal(bool verbose)
 :verbose_(verbose), isCudaMemCreated_(false),
 width_(256), height_(256), depth_(256),
 itersPerBlock_(10), solverType_(0) {}
@@ -52,7 +52,7 @@ void StructuredEikonal::CheckCUDAMemory() {
 
 void StructuredEikonal::init_cuda_mem() {
   assert(this->width_ > 0 && this->height_ > 0 && this->depth_ > 0);
-  if(this->width_ <= 0 || this->height_ <= 0 || this->depth_ <= 0){ 
+  if(this->width_ <= 0 || this->height_ <= 0 || this->depth_ <= 0){
     printf("Volume dimension cannot be zero");
     exit(1);
   }
@@ -66,7 +66,7 @@ void StructuredEikonal::init_cuda_mem() {
   ny = this->height_ + (BLOCK_LENGTH-this->height_%BLOCK_LENGTH)%BLOCK_LENGTH;
   nz = this->depth_ + (BLOCK_LENGTH-this->depth_%BLOCK_LENGTH)%BLOCK_LENGTH;
   if (this->verbose_) {
-    printf("%d %d %d \n",nx,ny,nz);
+    printf("%d %d %d \n",static_cast<int>(nx),static_cast<int>(ny),static_cast<int>(nz));
   }
 
   auto volSize = nx*ny*nz;
@@ -263,8 +263,8 @@ void StructuredEikonal::useSeeds() {
                 }
               } else {
                 for(size_t i = 0; i < this->seeds_.size(); i++) {
-                  if (this->seeds_[i][0] == x && 
-                    this->seeds_[i][1] == y && 
+                  if (this->seeds_[i][0] == x &&
+                    this->seeds_[i][1] == y &&
                     this->seeds_[i][2] == z) {
                     this->memoryStruct_.h_sol[idx] = 0;
                     isSeedBlock = true;
@@ -321,7 +321,7 @@ void StructuredEikonal::solveEikonal() {
   this->get_solution();
 }
 
-std::vector< std::vector< std::vector<double> > > 
+std::vector< std::vector< std::vector<double> > >
   StructuredEikonal::getFinalResult() {
     return this->answer_;
   }
@@ -329,11 +329,11 @@ std::vector< std::vector< std::vector<double> > >
 void StructuredEikonal::get_solution() {
   // copy solution from GPU
   CUDA_SAFE_CALL( cudaMemcpy(this->memoryStruct_.h_sol,
-    this->memoryStruct_.d_sol, this->memoryStruct_.volsize*sizeof(DOUBLE), 
+    this->memoryStruct_.d_sol, this->memoryStruct_.volsize*sizeof(DOUBLE),
     cudaMemcpyDeviceToHost) );
   //put the data where it belongs in the grand scheme of data!
   this->answer_ = std::vector<std::vector<std::vector<double> > >(
-    this->width_, std::vector<std::vector<double> >( 
+    this->width_, std::vector<std::vector<double> >(
     this->height_, std::vector<double>(this->depth_,0)));
   for(size_t blockID = 0; blockID < this->memoryStruct_.blknum; blockID++) {
     size_t baseAddr = blockID * this->memoryStruct_.blksize;
@@ -348,10 +348,10 @@ void StructuredEikonal::get_solution() {
     for(int k = 0; k < BLOCK_LENGTH; k++) {
       for(int j = 0; j < BLOCK_LENGTH; j++) {
         for(int i = 0; i < BLOCK_LENGTH; i++) {
-          double d = this->memoryStruct_.h_sol[baseAddr + 
-            k * BLOCK_LENGTH * BLOCK_LENGTH + 
+          double d = this->memoryStruct_.h_sol[baseAddr +
+            k * BLOCK_LENGTH * BLOCK_LENGTH +
             j * BLOCK_LENGTH + i];
-          if ((i + bx * BLOCK_LENGTH) < this->width_ && 
+          if ((i + bx * BLOCK_LENGTH) < this->width_ &&
             (j + by * BLOCK_LENGTH) < this->height_ &&
             (k + bz * BLOCK_LENGTH) < this->depth_) {
             this->answer_[(i + bx * BLOCK_LENGTH)][(j +

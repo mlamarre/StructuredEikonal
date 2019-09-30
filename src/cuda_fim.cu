@@ -156,7 +156,7 @@ void runEikonalSolverSimple(CUDAMEMSTRUCT &cmem, bool verbose)
 
     CUT_SAFE_CALL(cudaGetLastError());
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     sdkStopTimer(&timer_solver);
 
 
@@ -169,7 +169,7 @@ void runEikonalSolverSimple(CUDAMEMSTRUCT &cmem, bool verbose)
 
     CUT_SAFE_CALL(cudaGetLastError());
     //CUT_CHECK_ERROR("Kernel execution failed");
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 
     sdkStopTimer(&timer_reduction);
 
@@ -218,7 +218,7 @@ void runEikonalSolverSimple(CUDAMEMSTRUCT &cmem, bool verbose)
         }
       }
     }
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 #ifdef TIMER
     sdkStopTimer(&timer_list);
 #endif
@@ -245,7 +245,7 @@ void runEikonalSolverSimple(CUDAMEMSTRUCT &cmem, bool verbose)
     CUT_SAFE_CALL(cudaMemcpy(d_list, h_list, nActiveBlock*sizeof(uint), cudaMemcpyHostToDevice) );
     run_check_neighbor<<< dimGrid, dimBlock >>>(d_spd, d_mask, t_sol, d_sol, d_con, d_list, xdim, ydim, zdim, nOldActiveBlock, nActiveBlock);
     CUT_SAFE_CALL(cudaGetLastError());
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 
 #ifdef TIMER
     sdkStopTimer(&timer_solver);
@@ -260,7 +260,7 @@ void runEikonalSolverSimple(CUDAMEMSTRUCT &cmem, bool verbose)
 
     run_reduction<<< dimGrid, dim3(BLOCK_LENGTH,BLOCK_LENGTH,BLOCK_LENGTH/2) >>>(d_con, d_listVol, d_list, nActiveBlock);
     CUT_SAFE_CALL(cudaGetLastError());
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 
     sdkStopTimer(&timer_reduction);
 
@@ -287,7 +287,7 @@ void runEikonalSolverSimple(CUDAMEMSTRUCT &cmem, bool verbose)
       }
       else h_listed[i] = false;
     }
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 #ifdef TIMER
     sdkStopTimer(&timer_list2);
 #endif
